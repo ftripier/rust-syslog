@@ -207,7 +207,11 @@ impl Write for LoggerBackend {
                 let message = fmt::format(args);
                 socket.send_to(message.as_bytes(), addr).map(|_| ())
             }
-            LoggerBackend::Tcp(ref mut socket) => socket.write_fmt(args),
+            LoggerBackend::Tcp(ref mut socket) => {
+                let write_res = socket.write_fmt(args)?;
+                socket.flush()?;
+                Ok(write_res)
+            },
             #[cfg(not(unix))]
             LoggerBackend::Unix(_) | LoggerBackend::UnixStream(_) => {
                 Err(io::Error::new(io::ErrorKind::Other, "unsupported platform"))
