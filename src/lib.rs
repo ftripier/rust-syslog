@@ -178,7 +178,6 @@ impl Write for LoggerBackend {
             }
             LoggerBackend::Udp(ref socket, ref addr) => socket.send_to(&message[..], addr),
             LoggerBackend::Tcp(ref mut socket) => {
-                println!("reg write {:?}", message);
                 let write_res = socket.write(&message[..])?;
                 socket.flush()?;
                 Ok(write_res)
@@ -209,7 +208,6 @@ impl Write for LoggerBackend {
                 socket.send_to(message.as_bytes(), addr).map(|_| ())
             }
             LoggerBackend::Tcp(ref mut socket) => {
-                println!("fmt write {}", args);
                 let write_res = socket.write_fmt(args)?;
                 socket.flush()?;
                 Ok(write_res)
