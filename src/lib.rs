@@ -177,7 +177,11 @@ impl Write for LoggerBackend {
                     .and_then(|sz| socket.write(&null).map(|_| sz))
             }
             LoggerBackend::Udp(ref socket, ref addr) => socket.send_to(&message[..], addr),
-            LoggerBackend::Tcp(ref mut socket) => socket.write(&message[..]),
+            LoggerBackend::Tcp(ref mut socket) => {
+                let write_res = socket.write(&message[..])?;
+                socket.flush()?;
+                Ok(write_res)
+            },
             #[cfg(not(unix))]
             LoggerBackend::Unix(_) | LoggerBackend::UnixStream(_) => {
                 Err(io::Error::new(io::ErrorKind::Other, "unsupported platform"))
